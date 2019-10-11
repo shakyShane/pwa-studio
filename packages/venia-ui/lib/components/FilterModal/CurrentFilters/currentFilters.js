@@ -1,27 +1,24 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { object, shape, string } from 'prop-types';
 import { compose } from 'redux';
 import Icon from '../../Icon';
 import { X as Remove } from 'react-feather';
 import { mergeClasses } from '../../../classify';
 import { withRouter } from 'react-router-dom';
-import defaultClasses from './filtersCurrent.css';
-import { useCatalogContext } from '@magento/peregrine/lib/context/catalog';
+import defaultClasses from './currentFilters.css';
+import { useCurrentFilters } from '@magento/peregrine/lib/talons/FilterModal/CurrentFilters/useCurrentFilters';
 
-const FiltersCurrent = props => {
+const CurrentFilters = props => {
     const { history, keyPrefix, location } = props;
-    const classes = mergeClasses(defaultClasses, props.classes);
-    const [{ chosenFilterOptions }, { removeFilter }] = useCatalogContext();
 
-    const removeOption = useCallback(
-        event => {
-            const { title, value, dataset } =
-                event.currentTarget || event.srcElement;
-            const { group } = dataset;
-            removeFilter({ title, value, group }, history, location);
-        },
-        [history, location, removeFilter]
-    );
+    const talonProps = useCurrentFilters({
+        history,
+        location
+    });
+
+    const { chosenFilterOptions, handleRemoveOption } = talonProps;
+
+    const classes = mergeClasses(defaultClasses, props.classes);
 
     const chosenFilters = useMemo(
         () =>
@@ -36,7 +33,7 @@ const FiltersCurrent = props => {
                         >
                             <button
                                 className={classes.button}
-                                onClick={removeOption}
+                                onClick={handleRemoveOption}
                                 data-group={key}
                                 title={title}
                                 value={value}
@@ -58,14 +55,14 @@ const FiltersCurrent = props => {
             classes.item,
             chosenFilterOptions,
             keyPrefix,
-            removeOption
+            handleRemoveOption
         ]
     );
 
     return <ul className={classes.root}>{chosenFilters}</ul>;
 };
 
-FiltersCurrent.propTypes = {
+CurrentFilters.propTypes = {
     classes: shape({
         root: string,
         item: string,
@@ -77,4 +74,4 @@ FiltersCurrent.propTypes = {
     location: object
 };
 
-export default compose(withRouter)(FiltersCurrent);
+export default compose(withRouter)(CurrentFilters);
